@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0a1f">
+<title>LifeQuest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: #0a0716;
+    color: #e8e0d8;
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    overscroll-behavior-y: contain;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body {
+    background:
+      radial-gradient(ellipse at top, #1f1240 0%, #0a0716 60%),
+      radial-gradient(ellipse at bottom, #2a1245 0%, transparent 50%);
+    background-attachment: fixed;
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(2px 2px at 20% 30%, rgba(212,175,55,0.15), transparent),
+      radial-gradient(1px 1px at 70% 60%, rgba(212,175,55,0.1), transparent),
+      radial-gradient(1px 1px at 40% 80%, rgba(212,175,55,0.12), transparent),
+      radial-gradient(2px 2px at 90% 20%, rgba(212,175,55,0.08), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #app {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 16px 14px 100px;
+    position: relative;
+    z-index: 1;
+  }
+  h1, h2, h3, .title-font { font-family: 'Cinzel', serif; letter-spacing: 0.02em; }
+
+  /* === HEADER === */
+  .hero-card {
+    background: linear-gradient(145deg, #1c1136 0%, #150a2a 100%);
+    border: 1px solid #3a2a5e;
+    border-radius: 16px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(212,175,55,0.15);
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid rgba(212,175,55,0.25);
+    border-radius: 14px;
+    pointer-events: none;
+  }
+  .hero-row { display: flex; gap: 14px; align-items: center; }
+  .avatar {
+    width: 64px; height: 64px;
+    background: radial-gradient(circle, #3a2a5e 0%, #1a0f33 100%);
+    border: 2px solid #d4af37;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(212,175,55,0.3), inset 0 0 12px rgba(212,175,55,0.2);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .avatar:active { transform: scale(0.96); }
+  .hero-info { flex: 1; min-width: 0; }
+  .hero-name {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #f4d03f;
+    text-shadow: 0 0 10px rgba(244,208,63,0.4);
+    line-height: 1.1;
+    cursor: pointer;
+    display: inline-block;
+  }
+  .hero-title {
+    font-size: 12px;
+    color: #c9b8e8;
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .level-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    color: #1a0f2e;
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    font-size: 13px;
+    padding: 2px 10px;
+    border-radius: 8px;
+    margin-top: 4px;
+    box-shadow: 0 2px 6px rgba(212,175,55,0.4);
+  }
+  .xp-bar {
+    margin-top: 12px;
+    height: 14px;
+    background: #0a0518;
+    border: 1px solid #3a2a5e;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
+    background-size: 200% 100%;
+    border-radius: 7px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 12px rgba(244,208,63,0.6);
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .xp-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.9);
+    letter-spacing: 0.05em;
+  }
+
+  /* === STATS BAR === */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .stat-card {
+    background: linear-gradient(145deg, #1c1136 0%, #150a2a 100%);
+    border: 1px solid #3a2a5e;
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+    position: relative;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border: 1px solid rgba(212,175,55,0.15);
+    border-radius: 11px;
+    pointer-events: none;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #9b8db5;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  .stat-value {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #f4d03f;
+    margin-top: 4px;
+    line-height: 1;
+  }
+  .stat-goal {
+    font-size: 9px;
+    color: #9b8db5;
+    margin-top: 2px;
+  }
+  .stat-progress {
+    height: 3px;
+    background: #0a0518;
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .stat-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #d4af37, #f4d03f);
+    transition: width 0.5s ease;
+    border-radius: 2px;
+  }
+  .stat-card.hit .stat-value { color: #4ade80; text-shadow: 0 0 8px rgba(74,222,128,0.5); }
+  .stat-card.hit .stat-progress-fill { background: linear-gradient(90deg, #4ade80, #86efac); }
+  .stat-value.negative { color: #ef4444; }
+
+  /* === TABS === */
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-top: 16px;
+    background: #150a2a;
+    border: 1px solid #3a2a5e;
+    border-radius: 12px;
+    padding: 4px;
+  }
+  .tab {
+    background: transparent;
+    border: none;
+    color: #9b8db5;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 10px 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    color: #1a0f2e;
+    box-shadow: 0 2px 8px rgba(212,175,55,0.4);
+  }
+  .tab-content { margin-top: 14px; }
+  .tab-panel { display: none; animation: fadeIn 0.3s; }
+  .tab-panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* === SECTIONS === */
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin: 18px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before, .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #3a2a5e, transparent);
+  }
+  .section-title:first-child { margin-top: 4px; }
+
+  /* === TASK CARDS === */
+  .quest {
+    background: linear-gradient(145deg, #1c1136 0%, #150a2a 100%);
+    border: 1px solid #3a2a5e;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    transition: border-color 0.2s, transform 0.1s;
+  }
+  .quest::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border: 1px solid rgba(212,175,55,0.1);
+    border-radius: 11px;
+    pointer-events: none;
+  }
+  .quest.negative { border-color: #5a2a3a; }
+  .quest.negative::before { border-color: rgba(239,68,68,0.15); }
+  .quest.done { border-color: #2a5a3a; opacity: 0.85; }
+  .quest.failed { border-color: #5a2a3a; opacity: 0.7; }
+  .quest-icon {
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    background: rgba(212,175,55,0.1);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .quest.negative .quest-icon { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); }
+  .quest-info { flex: 1; min-width: 0; }
+  .quest-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e8e0d8;
+    line-height: 1.2;
+  }
+  .quest-meta {
+    font-size: 11px;
+    color: #9b8db5;
+    margin-top: 2px;
+  }
+  .quest-meta .pts { color: #f4d03f; font-weight: 600; }
+  .quest.negative .quest-meta .pts { color: #fca5a5; }
+  .quest-streak {
+    color: #f97316;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+  .quest-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .count-display {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #f4d03f;
+    min-width: 24px;
+    text-align: center;
+  }
+  .btn {
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    transition: all 0.15s;
+    -webkit-touch-callout: none;
+  }
+  .btn:active { transform: scale(0.92); }
+  .btn-icon {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .btn-plus {
+    background: linear-gradient(135deg, #d4af37, #b8941f);
+    color: #1a0f2e;
+    box-shadow: 0 2px 6px rgba(212,175,55,0.3);
+  }
+  .btn-input {
+    background: rgba(212,175,55,0.15);
+    border: 1px solid rgba(212,175,55,0.4);
+    color: #f4d03f;
+    font-size: 14px;
+  }
+  .btn-check {
+    background: linear-gradient(135deg, #4ade80, #16a34a);
+    color: #052e16;
+  }
+  .btn-x {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    color: #fff;
+  }
+  .btn-neg {
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: #fca5a5;
+  }
+  .yesno-actions { display: flex; gap: 6px; }
+  .yesno-actions .btn-icon { width: 36px; height: 36px; }
+  .yesno-actions .btn-icon.selected.btn-check { box-shadow: 0 0 12px rgba(74,222,128,0.6); }
+  .yesno-actions .btn-icon.selected.btn-x { box-shadow: 0 0 12px rgba(239,68,68,0.6); }
+  .yesno-actions .btn-icon:not(.selected) { opacity: 0.4; }
+
+  /* === SURVEY === */
+  .survey-card {
+    background: linear-gradient(145deg, #1c1136 0%, #150a2a 100%);
+    border: 1px solid #3a2a5e;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .survey-result {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .survey-result.pos { background: rgba(74,222,128,0.2); color: #4ade80; }
+  .survey-result.neg { background: rgba(239,68,68,0.2); color: #fca5a5; }
+  .survey-result.neutral { background: rgba(155,141,181,0.2); color: #c9b8e8; }
+
+  /* === CUSTOM QUEST CREATE === */
+  .create-quest {
+    background: linear-gradient(145deg, #1c1136 0%, #150a2a 100%);
+    border: 1px dashed #d4af37;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .form-row { margin-bottom: 10px; }
+  .form-label {
+    display: block;
+    font-size: 11px;
+    color: #c9b8e8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  input.field, textarea.field {
+    width: 100%;
+    background: #0a0518;
+    border: 1px solid #3a2a5e;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #e8e0d8;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  input.field:focus, textarea.field:focus { border-color: #d4af37; }
+  textarea.field { resize: none; min-height: 60px; font-family: inherit; }
+  .points-slider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .points-slider input[type=range] {
+    flex: 1;
+    accent-color: #d4af37;
+  }
+  .points-display {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #f4d03f;
+    min-width: 36px;
+    text-align: center;
+  }
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    color: #1a0f2e;
+    padding: 12px;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    box-shadow: 0 4px 12px rgba(212,175,55,0.3);
+  }
+  .empty-state {
+    text-align: center;
+    color: #9b8db5;
+    font-size: 13px;
+    padding: 24px 12px;
+    font-style: italic;
+  }
+
+  /* === ACHIEVEMENTS === */
+  .ach-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .ach-card {
+    background: linear-gradient(145deg, #1c1136 0%, #150a2a 100%);
+    border: 1px solid #3a2a5e;
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .ach-card.locked { opacity: 0.45; filter: grayscale(0.7); }
+  .ach-card.unlocked {
+    border-color: #d4af37;
+    box-shadow: 0 0 16px rgba(212,175,55,0.2);
+  }
+  .ach-card.unlocked::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 11px;
+    pointer-events: none;
+  }
+  .ach-icon {
+    font-size: 32px;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .ach-name {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #f4d03f;
+    line-height: 1.1;
+  }
+  .ach-card.locked .ach-name { color: #9b8db5; }
+  .ach-desc {
+    font-size: 10px;
+    color: #9b8db5;
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  /* === STATS / HISTORY === */
+  .chart-card {
+    background: linear-gradient(145deg, #1c1136 0%, #150a2a 100%);
+    border: 1px solid #3a2a5e;
+    border-radius: 12px;
+    padding: 14px 10px 10px;
+    margin-bottom: 14px;
+  }
+  .chart-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  #historyChart { width: 100%; height: 160px; display: block; }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(58,42,94,0.5);
+    font-size: 13px;
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-row .label { color: #c9b8e8; }
+  .breakdown-row .value { color: #f4d03f; font-weight: 600; font-family: 'Cinzel', serif; }
+
+  /* === MODAL === */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,7,22,0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    animation: fadeIn 0.2s;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: linear-gradient(145deg, #1c1136 0%, #150a2a 100%);
+    border: 2px solid #d4af37;
+    border-radius: 16px;
+    padding: 22px 18px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(212,175,55,0.2);
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-title {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #f4d03f;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .modal-text {
+    font-size: 13px;
+    color: #c9b8e8;
+    text-align: center;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #9b8db5;
+    font-size: 22px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+  }
+  .modal-buttons { display: flex; gap: 8px; margin-top: 14px; }
+  .modal-buttons .btn-primary { flex: 1; }
+  .btn-secondary {
+    flex: 1;
+    background: transparent;
+    border: 1px solid #3a2a5e;
+    color: #c9b8e8;
+    padding: 12px;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .avatar-option {
+    aspect-ratio: 1;
+    background: rgba(212,175,55,0.08);
+    border: 1px solid #3a2a5e;
+    border-radius: 10px;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .avatar-option.selected {
+    background: rgba(212,175,55,0.2);
+    border-color: #d4af37;
+    box-shadow: 0 0 10px rgba(212,175,55,0.3);
+  }
+
+  /* === TOAST === */
+  #toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: linear-gradient(145deg, #1c1136 0%, #150a2a 100%);
+    border: 2px solid #d4af37;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: #f4d03f;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px rgba(212,175,55,0.4);
+    z-index: 200;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    max-width: 90vw;
+    text-align: center;
+    font-size: 14px;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.bad { border-color: #ef4444; color: #fca5a5; box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px rgba(239,68,68,0.4); }
+  #toast.huge { border-color: #4ade80; color: #4ade80; box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 30px rgba(74,222,128,0.6); }
+
+  /* === LEVEL UP === */
+  #levelup {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle, rgba(212,175,55,0.3) 0%, rgba(10,7,22,0.95) 70%);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    animation: fadeIn 0.3s;
+  }
+  #levelup.show { display: flex; }
+  .levelup-content {
+    text-align: center;
+    animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .levelup-text {
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #f4d03f;
+    text-shadow: 0 0 20px rgba(244,208,63,0.8), 0 0 40px rgba(244,208,63,0.6);
+    letter-spacing: 0.1em;
+  }
+  .levelup-num {
+    font-family: 'Cinzel', serif;
+    font-size: 100px;
+    font-weight: 900;
+    color: #d4af37;
+    text-shadow: 0 0 40px rgba(244,208,63,0.9);
+    line-height: 1;
+    margin: 12px 0;
+  }
+  .levelup-title {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    color: #c9b8e8;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+  }
+
+  /* === DELETE BTN === */
+  .delete-btn {
+    background: transparent;
+    border: none;
+    color: #9b8db5;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+
+  /* small adjustments */
+  @media (max-width: 360px) {
+    .stat-value { font-size: 18px; }
+    .quest-name { font-size: 13px; }
+    .btn-icon { width: 30px; height: 30px; font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Hero / Profile Card -->
+  <div class="hero-card">
+    <div class="hero-row">
+      <div class="avatar" id="avatarBtn"></div>
+      <div class="hero-info">
+        <span class="hero-name" id="heroName"></span>
+        <div class="hero-title" id="heroTitle"></div>
+        <span class="level-badge" id="levelBadge"></span>
+      </div>
+    </div>
+    <div class="xp-bar">
+      <div class="xp-fill" id="xpFill"></div>
+      <div class="xp-text" id="xpText"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card" id="statDaily">
+      <div class="stat-label">Daily</div>
+      <div class="stat-value" id="dailyVal">0</div>
+      <div class="stat-progress"><div class="stat-progress-fill" id="dailyBar"></div></div>
+      <div class="stat-goal" id="dailyGoalLabel"></div>
+    </div>
+    <div class="stat-card" id="statWeekly">
+      <div class="stat-label">Weekly</div>
+      <div class="stat-value" id="weeklyVal">0</div>
+      <div class="stat-progress"><div class="stat-progress-fill" id="weeklyBar"></div></div>
+      <div class="stat-goal" id="weeklyGoalLabel"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total XP</div>
+      <div class="stat-value" id="totalVal">0</div>
+      <div class="stat-progress"></div>
+      <div class="stat-goal">Lifetime</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="quests">Quests</button>
+    <button class="tab" data-tab="side">Side</button>
+    <button class="tab" data-tab="stats">Stats</button>
+    <button class="tab" data-tab="ach">Awards</button>
+  </div>
+
+  <div class="tab-content">
+    <!-- Quests Tab -->
+    <div class="tab-panel active" id="panel-quests">
+      <div class="section-title">Daily Quests</div>
+      <div id="incrementingList"></div>
+      <div class="section-title">Daily Trials</div>
+      <div id="yesnoList"></div>
+      <div class="section-title">Survey</div>
+      <div id="surveyList"></div>
+      <div class="section-title">Vices</div>
+      <div id="negativeList"></div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="tab-panel" id="panel-side">
+      <div class="create-quest">
+        <div class="section-title" style="margin-top:0">Create Side Quest</div>
+        <div class="form-row">
+          <label class="form-label">Title</label>
+          <input class="field" id="newTitle" maxlength="40" placeholder="Slay the bug...">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Description</label>
+          <textarea class="field" id="newDesc" maxlength="120" placeholder="A short description of the quest"></textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Reward (1-10 pts)</label>
+          <div class="points-slider">
+            <input type="range" id="newPoints" min="1" max="10" value="5">
+            <span class="points-display" id="pointsDisplay">5</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="createQuestBtn">+ Add Quest</button>
+      </div>
+      <div class="section-title">Active Side Quests</div>
+      <div id="customsList"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="tab-panel" id="panel-stats">
+      <div class="chart-card">
+        <div class="chart-title">Last 30 Days</div>
+        <canvas id="historyChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Today's Breakdown</div>
+        <div id="breakdownList"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Active Streaks</div>
+        <div id="streaksList"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Settings</div>
+        <div class="form-row">
+          <label class="form-label">Daily Goal</label>
+          <input class="field" type="number" id="dailyGoalInput" min="1" max="500">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Weekly Goal</label>
+          <input class="field" type="number" id="weeklyGoalInput" min="1" max="3000">
+        </div>
+        <button class="btn btn-secondary" style="width:100%;margin-top:6px" id="resetBtn">Reset All Data</button>
+      </div>
+    </div>
+
+    <!-- Achievements -->
+    <div class="tab-panel" id="panel-ach">
+      <div class="section-title" style="margin-top:0">Hall of Fame</div>
+      <div class="ach-grid" id="achGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Sleep Survey Modal -->
+<div class="modal-bg" id="sleepModal">
+  <div class="modal">
+    <div class="modal-title">😴 Morning Survey</div>
+    <div class="modal-text">How many hours did you sleep last night?</div>
+    <div class="form-row">
+      <input class="field" type="number" id="sleepInput" step="0.5" min="0" max="24" placeholder="e.g. 8" inputmode="decimal">
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-secondary" id="sleepSkip">Skip</button>
+      <button class="btn btn-primary" id="sleepSubmit">Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Number Input Modal -->
+<div class="modal-bg" id="numberModal">
+  <div class="modal">
+    <button class="modal-close" id="numberClose">×</button>
+    <div class="modal-title" id="numberTitle">Enter Amount</div>
+    <div class="modal-text" id="numberText"></div>
+    <div class="form-row">
+      <input class="field" type="number" id="numberInput" step="any" min="0" inputmode="decimal">
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-secondary" id="numberCancel">Cancel</button>
+      <button class="btn btn-primary" id="numberSubmit">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar / Name Modal -->
+<div class="modal-bg" id="profileModal">
+  <div class="modal">
+    <button class="modal-close" id="profileClose">×</button>
+    <div class="modal-title">Customize Hero</div>
+    <div class="form-row">
+      <label class="form-label">Hero Name</label>
+      <input class="field" id="nameInput" maxlength="20">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Avatar</label>
+      <div class="avatar-grid" id="avatarGrid"></div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-primary" id="profileSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal">
+    <div class="modal-title" id="confirmTitle">Are you sure?</div>
+    <div class="modal-text" id="confirmText"></div>
+    <div class="modal-buttons">
+      <button class="btn btn-secondary" id="confirmCancel">Cancel</button>
+      <button class="btn btn-primary" id="confirmOK">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Level Up overlay -->
+<div id="levelup">
+  <div class="levelup-content">
+    <div class="levelup-text">LEVEL UP!</div>
+    <div class="levelup-num" id="luNum"></div>
+    <div class="levelup-title" id="luTitle"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ============ DEFINITIONS ============
+const INCREMENTING = [
+  { id: "pushups",   icon: "💪", name: "Pushups",                points: 1, unit: "rep",     lifetime: "pushups" },
+  { id: "study",     icon: "📚", name: "Hours Studying/Working", points: 2, unit: "hour",    lifetime: "studyHours", step: 0.5 },
+  { id: "phoneFree", icon: "🔇", name: "Hours Without Phone",    points: 5, unit: "hour",    lifetime: "phoneFreeHours", step: 0.5 },
+  { id: "newPeople", icon: "🤝", name: "New People Met",         points: 8, unit: "person",  lifetime: "newPeople" },
+  { id: "podcast",   icon: "🎧", name: "Philosophy Episodes",    points: 3, unit: "episode", lifetime: "podcasts" },
+];
+
+const NEGATIVES = [
+  { id: "social",  icon: "📱", name: "Hours of Social Scrolling", points: -3, unit: "hour", step: 0.5 },
+  { id: "junk",    icon: "🍔", name: "Junk Food Meals",            points: -2, unit: "meal" },
+  { id: "skipped", icon: "💤", name: "Skipped Workout",            points: -5, unit: "time" },
+];
+
+const YESNO = [
+  { id: "salad",   icon: "🥗", name: "Ate a Salad",      points: 5, lifetime: "salads" },
+  { id: "stretch", icon: "🧘", name: "Morning Stretch",  points: 2, lifetime: "stretches" },
+];
+
+function sleepPoints(h) {
+  if (h == null || isNaN(h)) return 0;
+  if (h === 8) return 1;
+  if (h === 7 || h === 9) return 0;
+  if (h < 7) return -Math.ceil(7 - h);
+  return -Math.ceil(h - 9);
+}
+
+const TITLES = [
+  { lvl: 1,  name: "Novice" },
+  { lvl: 3,  name: "Apprentice" },
+  { lvl: 6,  name: "Adept" },
+  { lvl: 10, name: "Knight" },
+  { lvl: 15, name: "Champion" },
+  { lvl: 20, name: "Master" },
+  { lvl: 30, name: "Grandmaster" },
+  { lvl: 50, name: "Legend" },
+  { lvl: 75, name: "Mythic" },
+  { lvl: 100, name: "Ascended" },
+];
+
+const ACHIEVEMENTS = [
+  { id: "first10",    icon: "🌱", name: "First Steps",    desc: "Earn 10 XP",
+    check: s => s.profile.totalXP >= 10 },
+  { id: "level5",     icon: "⭐", name: "Rising Hero",     desc: "Reach Lv 5",
+    check: s => s.profile.level >= 5 },
+  { id: "level10",    icon: "🌟", name: "Veteran",         desc: "Reach Lv 10",
+    check: s => s.profile.level >= 10 },
+  { id: "level25",    icon: "👑", name: "Legend",          desc: "Reach Lv 25",
+    check: s => s.profile.level >= 25 },
+  { id: "centurion",  icon: "💯", name: "Centurion",       desc: "100 lifetime pushups",
+    check: s => (s.lifetime.pushups || 0) >= 100 },
+  { id: "thousand",   icon: "🔱", name: "Iron Body",       desc: "1000 lifetime pushups",
+    check: s => (s.lifetime.pushups || 0) >= 1000 },
+  { id: "bookworm",   icon: "📖", name: "Bookworm",        desc: "10 hrs studied",
+    check: s => (s.lifetime.studyHours || 0) >= 10 },
+  { id: "scholar",    icon: "🎓", name: "Scholar",         desc: "100 hrs studied",
+    check: s => (s.lifetime.studyHours || 0) >= 100 },
+  { id: "monk",       icon: "🙏", name: "Monk",            desc: "20 hrs phone-free",
+    check: s => (s.lifetime.phoneFreeHours || 0) >= 20 },
+  { id: "social_b",   icon: "🦋", name: "Social Butterfly", desc: "Meet 25 new people",
+    check: s => (s.lifetime.newPeople || 0) >= 25 },
+  { id: "philosopher",icon: "🦉", name: "Philosopher",     desc: "25 podcast episodes",
+    check: s => (s.lifetime.podcasts || 0) >= 25 },
+  { id: "saladKing",  icon: "🥗", name: "Salad King",      desc: "7-day salad streak",
+    check: s => (s.streaks.salad?.count || 0) >= 7 },
+  { id: "flexible",   icon: "🤸", name: "Flexible",        desc: "7-day stretch streak",
+    check: s => (s.streaks.stretch?.count || 0) >= 7 },
+  { id: "goalCrusher",icon: "🎯", name: "Goal Crusher",    desc: "7-day goal streak",
+    check: s => (s.streaks.dailyGoal?.count || 0) >= 7 },
+  { id: "weekWarrior",icon: "🏆", name: "Week Warrior",    desc: "Hit weekly goal",
+    check: s => (s.lifetime.weeksGoalHit || 0) >= 1 },
+  { id: "questMaster",icon: "📜", name: "Quest Master",    desc: "Complete 10 side quests",
+    check: s => (s.lifetime.customsCompleted || 0) >= 10 },
+];
+
+const AVATARS = ["🧙","🧝","🧛","🧚","🦸","🦹","🧞","🧜","🥷","⚔️","🛡️","🏹","🔮","👑","🦊"];
+
+// ============ STATE ============
+const STORE_KEY = "lifequest.v1";
+const todayStr = () => {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+};
+const dateAddDays = (s, n) => {
+  const [y,m,d] = s.split("-").map(Number);
+  const dt = new Date(y, m-1, d);
+  dt.setDate(dt.getDate() + n);
+  return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2,"0") + "-" + String(dt.getDate()).padStart(2,"0");
+};
+const weekStartFor = (s) => {
+  // Sunday start. JS getDay(): 0=Sun
+  const [y,m,d] = s.split("-").map(Number);
+  const dt = new Date(y, m-1, d);
+  const dow = dt.getDay();
+  dt.setDate(dt.getDate() - dow);
+  return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2,"0") + "-" + String(dt.getDate()).padStart(2,"0");
+};
+
+function defaultState() {
+  return {
+    profile: {
+      name: "Hero",
+      avatar: "🧙",
+      totalXP: 0,
+      level: 1,
+      dailyGoal: 50,
+      weeklyGoal: 300,
+    },
+    today: {
+      date: todayStr(),
+      points: 0,
+      increments: {},     // taskId -> count
+      negatives: {},      // taskId -> count
+      surveys: {},        // taskId -> value
+      yesno: {},          // taskId -> true/false (true=done, false=failed)
+      sleepAsked: false,
+      goalHitClaimed: false,
+    },
+    week: {
+      start: weekStartFor(todayStr()),
+      points: 0,
+      goalHitClaimed: false,
+    },
+    history: {},          // dateStr -> { total, breakdown: {...} }
+    streaks: {},          // taskId -> { count, lastDate }
+    customs: [],          // [{ id, title, desc, points, status, created, completedDate }]
+    achievements: {},     // achId -> { date }
+    lifetime: {
+      pushups: 0, studyHours: 0, phoneFreeHours: 0, newPeople: 0, podcasts: 0,
+      salads: 0, stretches: 0, customsCompleted: 0, daysGoalHit: 0, weeksGoalHit: 0,
+    },
+  };
+}
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return defaultState();
+    const s = JSON.parse(raw);
+    // shallow merge with defaults to handle additions
+    const def = defaultState();
+    return { ...def, ...s,
+      profile: { ...def.profile, ...(s.profile||{}) },
+      today: { ...def.today, ...(s.today||{}) },
+      week: { ...def.week, ...(s.week||{}) },
+      lifetime: { ...def.lifetime, ...(s.lifetime||{}) },
+      streaks: s.streaks || {},
+      achievements: s.achievements || {},
+      customs: s.customs || [],
+      history: s.history || {},
+    };
+  } catch(e) {
+    console.warn("load err", e);
+    return defaultState();
+  }
+}
+
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch(e) { console.warn("save err", e); }
+}
+
+// ============ LEVEL MATH ============
+function xpForLevel(n) { return 50 * n * (n - 1); } // cumulative XP at start of level n
+function levelFromXP(xp) {
+  let n = Math.floor((1 + Math.sqrt(1 + 8 * xp / 50)) / 2);
+  if (n < 1) n = 1;
+  while (xpForLevel(n+1) <= xp) n++;
+  while (xpForLevel(n) > xp) n--;
+  return Math.max(1, n);
+}
+function getTitle(lvl) {
+  let t = "Novice";
+  for (const e of TITLES) if (lvl >= e.lvl) t = e.name;
+  return t;
+}
+
+// ============ ROLLOVER ============
+function rollover() {
+  const today = todayStr();
+  const wkStart = weekStartFor(today);
+
+  // Day rollover
+  if (state.today.date !== today) {
+    // archive yesterday
+    const yest = state.today;
+    if (yest.date) {
+      state.history[yest.date] = {
+        total: yest.points,
+        breakdown: {
+          increments: { ...yest.increments },
+          negatives: { ...yest.negatives },
+          surveys: { ...yest.surveys },
+          yesno: { ...yest.yesno },
+        },
+      };
+
+      // streak: dailyGoal hit?
+      if (yest.points >= state.profile.dailyGoal) {
+        bumpStreak("dailyGoal", yest.date);
+        state.lifetime.daysGoalHit = (state.lifetime.daysGoalHit||0) + 1;
+      } else {
+        state.streaks.dailyGoal = { count: 0, lastDate: yest.date };
+      }
+      // streak: yesno tasks
+      for (const t of YESNO) {
+        if (yest.yesno[t.id] === true) bumpStreak(t.id, yest.date);
+        else state.streaks[t.id] = { count: 0, lastDate: yest.date };
+      }
+    }
+    // reset today
+    state.today = {
+      date: today,
+      points: 0,
+      increments: {}, negatives: {}, surveys: {}, yesno: {},
+      sleepAsked: false,
+      goalHitClaimed: false,
+    };
+  }
+
+  // Week rollover (Sunday)
+  if (state.week.start !== wkStart) {
+    if (state.week.points >= state.profile.weeklyGoal) {
+      state.lifetime.weeksGoalHit = (state.lifetime.weeksGoalHit||0) + 1;
+    }
+    state.week = { start: wkStart, points: 0, goalHitClaimed: false };
+  }
+}
+function bumpStreak(id, dateStr) {
+  const cur = state.streaks[id] || { count: 0, lastDate: null };
+  // if last was yesterday, increment; if last was same date, no change; else reset to 1
+  if (cur.lastDate === dateStr) return;
+  if (cur.lastDate === dateAddDays(dateStr, -1)) cur.count = (cur.count||0) + 1;
+  else cur.count = 1;
+  cur.lastDate = dateStr;
+  state.streaks[id] = cur;
+}
+
+// ============ POINTS ============
+function awardPoints(pts) {
+  state.today.points += pts;
+  state.week.points += pts;
+  if (pts > 0) state.profile.totalXP += pts;
+  else state.profile.totalXP = Math.max(0, state.profile.totalXP + pts);
+  // level up check
+  const newLvl = levelFromXP(state.profile.totalXP);
+  if (newLvl > state.profile.level) {
+    const old = state.profile.level;
+    state.profile.level = newLvl;
+    showLevelUp(newLvl);
+  } else {
+    state.profile.level = newLvl;
+  }
+  // check goal-hit toast
+  if (!state.today.goalHitClaimed && state.today.points >= state.profile.dailyGoal) {
+    state.today.goalHitClaimed = true;
+    setTimeout(() => toast("🎯 DAILY GOAL HIT!", "huge"), 600);
+  }
+  if (!state.week.goalHitClaimed && state.week.points >= state.profile.weeklyGoal) {
+    state.week.goalHitClaimed = true;
+    setTimeout(() => toast("🏆 WEEKLY GOAL CONQUERED!", "huge"), 800);
+  }
+  checkAchievements();
+}
+
+function checkAchievements() {
+  for (const a of ACHIEVEMENTS) {
+    if (!state.achievements[a.id] && a.check(state)) {
+      state.achievements[a.id] = { date: todayStr() };
+      setTimeout(() => toast(`🏅 ${a.name} unlocked!`, "huge"), 400);
+    }
+  }
+}
+
+// ============ INCREMENT/DECREMENT ACTIONS ============
+function addIncrement(taskId, amount) {
+  const t = INCREMENTING.find(x => x.id === taskId);
+  if (!t || amount <= 0) return;
+  state.today.increments[taskId] = (state.today.increments[taskId] || 0) + amount;
+  if (t.lifetime) state.lifetime[t.lifetime] = (state.lifetime[t.lifetime] || 0) + amount;
+  const pts = amount * t.points;
+  awardPoints(pts);
+  toast(`+${pts} XP · ${t.name}`);
+  haptic(20);
+  save(); render();
+}
+
+function addNegative(taskId, amount) {
+  const t = NEGATIVES.find(x => x.id === taskId);
+  if (!t || amount <= 0) return;
+  state.today.negatives[taskId] = (state.today.negatives[taskId] || 0) + amount;
+  const pts = amount * t.points; // negative
+  awardPoints(pts);
+  toast(`${pts} XP · ${t.name}`, "bad");
+  haptic(40);
+  save(); render();
+}
+
+function setYesNo(taskId, value) {
+  const t = YESNO.find(x => x.id === taskId);
+  if (!t) return;
+  const prev = state.today.yesno[taskId];
+  if (prev === value) return; // no change
+  // undo previous award if any
+  if (prev === true) awardPoints(-t.points);
+  state.today.yesno[taskId] = value;
+  if (value === true) {
+    awardPoints(t.points);
+    if (t.lifetime) state.lifetime[t.lifetime] = (state.lifetime[t.lifetime] || 0) + 1;
+    bumpStreak(taskId, todayStr());
+    toast(`+${t.points} XP · ${t.name}`);
+    haptic(20);
+  } else {
+    state.streaks[taskId] = { count: 0, lastDate: todayStr() };
+    toast(`${t.name} marked failed`, "bad");
+    haptic(40);
+  }
+  save(); render();
+}
+
+function submitSleep(hours) {
+  const prev = state.today.surveys.sleep;
+  if (prev != null) awardPoints(-sleepPoints(prev));
+  state.today.surveys.sleep = hours;
+  state.today.sleepAsked = true;
+  const pts = sleepPoints(hours);
+  awardPoints(pts);
+  if (pts > 0) toast(`+${pts} XP · Well rested`);
+  else if (pts < 0) toast(`${pts} XP · Sleep deficit`, "bad");
+  else toast(`Sleep logged: ${hours}h`);
+  haptic(20);
+  save(); render();
+}
+
+// ============ CUSTOM QUESTS ============
+function addCustom(title, desc, points) {
+  state.customs.push({
+    id: "c_" + Date.now() + "_" + Math.floor(Math.random()*999),
+    title, desc, points,
+    status: "pending",
+    created: todayStr(),
+  });
+  save(); render();
+  toast(`Quest added: ${title}`);
+}
+function completeCustom(id, success) {
+  const q = state.customs.find(x => x.id === id);
+  if (!q || q.status !== "pending") return;
+  q.status = success ? "done" : "failed";
+  q.completedDate = todayStr();
+  if (success) {
+    awardPoints(q.points);
+    state.lifetime.customsCompleted = (state.lifetime.customsCompleted || 0) + 1;
+    toast(`+${q.points} XP · ${q.title}`);
+    haptic(20);
+  } else {
+    toast(`${q.title} abandoned`, "bad");
+    haptic(40);
+  }
+  save(); render();
+}
+function deleteCustom(id) {
+  state.customs = state.customs.filter(x => x.id !== id);
+  save(); render();
+}
+
+// ============ UI HELPERS ============
+const $ = (s, p=document) => p.querySelector(s);
+const $$ = (s, p=document) => Array.from(p.querySelectorAll(s));
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html != null) e.innerHTML = html;
+  return e;
+}
+function haptic(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch(e) {} }
+
+let toastTimer = null;
+function toast(msg, type) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.className = type || "";
+  // force reflow
+  void t.offsetWidth;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+function showLevelUp(lvl) {
+  $("#luNum").textContent = lvl;
+  $("#luTitle").textContent = getTitle(lvl);
+  const overlay = $("#levelup");
+  overlay.classList.add("show");
+  haptic([30, 60, 30, 60, 100]);
+  setTimeout(() => overlay.classList.remove("show"), 2400);
+}
+
+// ============ RENDER ============
+function render() {
+  rollover();
+  renderHero();
+  renderStats();
+  renderQuests();
+  renderCustoms();
+  renderStatsTab();
+  renderAchievements();
+}
+
+function renderHero() {
+  $("#avatarBtn").textContent = state.profile.avatar;
+  $("#heroName").textContent = state.profile.name;
+  $("#heroTitle").textContent = getTitle(state.profile.level);
+  $("#levelBadge").textContent = "Lv " + state.profile.level;
+  const lvl = state.profile.level;
+  const cur = xpForLevel(lvl);
+  const next = xpForLevel(lvl + 1);
+  const pct = Math.max(0, Math.min(1, (state.profile.totalXP - cur) / (next - cur)));
+  $("#xpFill").style.width = (pct * 100).toFixed(1) + "%";
+  $("#xpText").textContent = `${state.profile.totalXP} / ${next} XP`;
+}
+
+function renderStats() {
+  const dp = state.today.points;
+  const wp = state.week.points;
+  $("#dailyVal").textContent = dp;
+  $("#dailyVal").classList.toggle("negative", dp < 0);
+  $("#weeklyVal").textContent = wp;
+  $("#weeklyVal").classList.toggle("negative", wp < 0);
+  $("#totalVal").textContent = state.profile.totalXP;
+  $("#dailyGoalLabel").textContent = `Goal: ${state.profile.dailyGoal}`;
+  $("#weeklyGoalLabel").textContent = `Goal: ${state.profile.weeklyGoal}`;
+  $("#dailyBar").style.width = Math.max(0, Math.min(100, dp / state.profile.dailyGoal * 100)) + "%";
+  $("#weeklyBar").style.width = Math.max(0, Math.min(100, wp / state.profile.weeklyGoal * 100)) + "%";
+  $("#statDaily").classList.toggle("hit", dp >= state.profile.dailyGoal);
+  $("#statWeekly").classList.toggle("hit", wp >= state.profile.weeklyGoal);
+}
+
+function renderQuests() {
+  // Incrementing
+  const il = $("#incrementingList");
+  il.innerHTML = "";
+  for (const t of INCREMENTING) {
+    const count = state.today.increments[t.id] || 0;
+    const earned = count * t.points;
+    const card = el("div", "quest");
+    const stk = state.streaks[t.id]?.count || 0;
+    card.innerHTML = `
+      <div class="quest-icon">${t.icon}</div>
+      <div class="quest-info">
+        <div class="quest-name">${t.name}</div>
+        <div class="quest-meta"><span class="pts">+${t.points} pts</span> per ${t.unit} · today: ${count} (${earned} XP)</div>
+      </div>
+      <div class="quest-actions">
+        <button class="btn btn-icon btn-input" data-act="num" data-id="${t.id}" data-step="${t.step||1}">#</button>
+        <button class="btn btn-icon btn-plus" data-act="inc" data-id="${t.id}" data-step="${t.step||1}">+</button>
+      </div>`;
+    il.appendChild(card);
+  }
+
+  // YesNo
+  const yl = $("#yesnoList");
+  yl.innerHTML = "";
+  for (const t of YESNO) {
+    const cur = state.today.yesno[t.id];
+    const stk = state.streaks[t.id]?.count || 0;
+    const card = el("div", "quest" + (cur === true ? " done" : cur === false ? " failed" : ""));
+    card.innerHTML = `
+      <div class="quest-icon">${t.icon}</div>
+      <div class="quest-info">
+        <div class="quest-name">${t.name}</div>
+        <div class="quest-meta">
+          <span class="pts">+${t.points} pts</span> if yes
+          ${stk > 0 ? `<span class="quest-streak">🔥 ${stk}</span>` : ""}
+        </div>
+      </div>
+      <div class="quest-actions yesno-actions">
+        <button class="btn btn-icon btn-check ${cur===true?'selected':''}" data-act="yes" data-id="${t.id}">✓</button>
+        <button class="btn btn-icon btn-x ${cur===false?'selected':''}" data-act="no" data-id="${t.id}">✕</button>
+      </div>`;
+    yl.appendChild(card);
+  }
+
+  // Surveys
+  const sl = $("#surveyList");
+  sl.innerHTML = "";
+  const sleep = state.today.surveys.sleep;
+  const sleepCard = el("div", "survey-card");
+  if (sleep != null) {
+    const pts = sleepPoints(sleep);
+    const cls = pts > 0 ? "pos" : pts < 0 ? "neg" : "neutral";
+    const sign = pts > 0 ? `+${pts}` : pts;
+    sleepCard.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="quest-icon">😴</div>
+        <div style="flex:1">
+          <div class="quest-name">Hours of Sleep</div>
+          <div class="quest-meta">Logged: <strong>${sleep}h</strong> <span class="survey-result ${cls}">${sign} XP</span></div>
+        </div>
+        <button class="btn btn-icon btn-input" id="reSleep">↻</button>
+      </div>`;
+  } else {
+    sleepCard.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="quest-icon">😴</div>
+        <div style="flex:1">
+          <div class="quest-name">Hours of Sleep</div>
+          <div class="quest-meta">Tap to log (8h = +1 · 7 or 9 = 0 · further off = -1/hr)</div>
+        </div>
+        <button class="btn btn-icon btn-input" id="reSleep">+</button>
+      </div>`;
+  }
+  sl.appendChild(sleepCard);
+  sleepCard.querySelector("#reSleep").addEventListener("click", () => openSleepModal());
+
+  // Negatives
+  const nl = $("#negativeList");
+  nl.innerHTML = "";
+  for (const t of NEGATIVES) {
+    const count = state.today.negatives[t.id] || 0;
+    const earned = count * t.points;
+    const card = el("div", "quest negative");
+    card.innerHTML = `
+      <div class="quest-icon">${t.icon}</div>
+      <div class="quest-info">
+        <div class="quest-name">${t.name}</div>
+        <div class="quest-meta"><span class="pts">${t.points} pts</span> per ${t.unit} · today: ${count} (${earned} XP)</div>
+      </div>
+      <div class="quest-actions">
+        <button class="btn btn-icon btn-input" data-act="numneg" data-id="${t.id}" data-step="${t.step||1}">#</button>
+        <button class="btn btn-icon btn-neg" data-act="neg" data-id="${t.id}" data-step="${t.step||1}">+</button>
+      </div>`;
+    nl.appendChild(card);
+  }
+
+  // Bind quest actions via event delegation
+  $("#panel-quests").onclick = onQuestClick;
+}
+
+function onQuestClick(e) {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const step = parseFloat(btn.dataset.step) || 1;
+  const act = btn.dataset.act;
+  if (act === "inc") addIncrement(id, step);
+  else if (act === "num") openNumberModal(id, "inc");
+  else if (act === "neg") addNegative(id, step);
+  else if (act === "numneg") openNumberModal(id, "neg");
+  else if (act === "yes") setYesNo(id, true);
+  else if (act === "no") setYesNo(id, false);
+}
+
+function renderCustoms() {
+  const list = $("#customsList");
+  list.innerHTML = "";
+  const pending = state.customs.filter(q => q.status === "pending");
+  const done = state.customs.filter(q => q.status !== "pending").slice(-5);
+  if (pending.length === 0 && done.length === 0) {
+    list.appendChild(el("div", "empty-state", "No active side quests. Forge one above!"));
+    return;
+  }
+  for (const q of pending) {
+    const card = el("div", "quest");
+    card.innerHTML = `
+      <div class="quest-icon">📜</div>
+      <div class="quest-info">
+        <div class="quest-name">${escapeHTML(q.title)}</div>
+        <div class="quest-meta"><span class="pts">+${q.points} pts</span> · ${escapeHTML(q.desc || "")}</div>
+      </div>
+      <div class="quest-actions yesno-actions">
+        <button class="btn btn-icon btn-check" data-cact="ok" data-id="${q.id}">✓</button>
+        <button class="btn btn-icon btn-x" data-cact="x" data-id="${q.id}">✕</button>
+      </div>`;
+    list.appendChild(card);
+  }
+  if (done.length) {
+    list.appendChild(el("div", "section-title", "Completed / Failed"));
+    for (const q of done.reverse()) {
+      const card = el("div", "quest " + (q.status === "done" ? "done" : "failed"));
+      card.innerHTML = `
+        <div class="quest-icon">${q.status==="done"?"🏆":"💀"}</div>
+        <div class="quest-info">
+          <div class="quest-name">${escapeHTML(q.title)}</div>
+          <div class="quest-meta">${q.status === "done" ? `+${q.points} XP earned` : "Failed"} · ${q.completedDate||""}</div>
+        </div>
+        <button class="delete-btn" data-cact="del" data-id="${q.id}">🗑</button>`;
+      list.appendChild(card);
+    }
+  }
+  list.onclick = (e) => {
+    const b = e.target.closest("button[data-cact]");
+    if (!b) return;
+    const id = b.dataset.id;
+    if (b.dataset.cact === "ok") completeCustom(id, true);
+    else if (b.dataset.cact === "x") completeCustom(id, false);
+    else if (b.dataset.cact === "del") deleteCustom(id);
+  };
+}
+
+function escapeHTML(s) {
+  return String(s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c]);
+}
+
+function renderStatsTab() {
+  drawHistoryChart();
+  // Breakdown
+  const bl = $("#breakdownList");
+  bl.innerHTML = "";
+  const rows = [];
+  for (const t of INCREMENTING) {
+    const c = state.today.increments[t.id] || 0;
+    if (c > 0) rows.push([`${t.icon} ${t.name}`, `${c} × ${t.points} = +${c*t.points}`]);
+  }
+  for (const t of NEGATIVES) {
+    const c = state.today.negatives[t.id] || 0;
+    if (c > 0) rows.push([`${t.icon} ${t.name}`, `${c} × ${t.points} = ${c*t.points}`]);
+  }
+  for (const t of YESNO) {
+    const v = state.today.yesno[t.id];
+    if (v === true) rows.push([`${t.icon} ${t.name}`, `+${t.points}`]);
+    else if (v === false) rows.push([`${t.icon} ${t.name}`, `failed`]);
+  }
+  if (state.today.surveys.sleep != null) {
+    const p = sleepPoints(state.today.surveys.sleep);
+    rows.push([`😴 Sleep ${state.today.surveys.sleep}h`, p>=0?`+${p}`:`${p}`]);
+  }
+  // customs done today
+  for (const q of state.customs) {
+    if (q.status === "done" && q.completedDate === state.today.date) {
+      rows.push([`📜 ${q.title}`, `+${q.points}`]);
+    }
+  }
+  if (rows.length === 0) bl.appendChild(el("div", "empty-state", "Nothing logged today yet."));
+  else {
+    for (const [l, v] of rows) {
+      const r = el("div", "breakdown-row");
+      r.innerHTML = `<span class="label">${escapeHTML(l)}</span><span class="value">${escapeHTML(v)}</span>`;
+      bl.appendChild(r);
+    }
+    const total = el("div", "breakdown-row");
+    total.innerHTML = `<span class="label" style="color:#f4d03f"><strong>Today's Total</strong></span><span class="value">${state.today.points}</span>`;
+    bl.appendChild(total);
+  }
+
+  // Streaks
+  const sl = $("#streaksList");
+  sl.innerHTML = "";
+  const trackedStreaks = [
+    { id: "salad",   icon: "🥗", name: "Salad" },
+    { id: "stretch", icon: "🧘", name: "Stretch" },
+    { id: "dailyGoal", icon: "🎯", name: "Daily Goal" },
+  ];
+  for (const t of trackedStreaks) {
+    const c = state.streaks[t.id]?.count || 0;
+    const r = el("div", "breakdown-row");
+    r.innerHTML = `<span class="label">${t.icon} ${t.name}</span><span class="value">${c>0?`🔥 ${c} day${c>1?'s':''}`:'—'}</span>`;
+    sl.appendChild(r);
+  }
+
+  // Settings inputs
+  $("#dailyGoalInput").value = state.profile.dailyGoal;
+  $("#weeklyGoalInput").value = state.profile.weeklyGoal;
+}
+
+function renderAchievements() {
+  const grid = $("#achGrid");
+  grid.innerHTML = "";
+  for (const a of ACHIEVEMENTS) {
+    const unlocked = !!state.achievements[a.id];
+    const card = el("div", "ach-card " + (unlocked ? "unlocked" : "locked"));
+    card.innerHTML = `
+      <span class="ach-icon">${unlocked ? a.icon : "🔒"}</span>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>`;
+    grid.appendChild(card);
+  }
+}
+
+// ============ HISTORY CHART ============
+function drawHistoryChart() {
+  const c = $("#historyChart");
+  const dpr = window.devicePixelRatio || 1;
+  const rect = c.getBoundingClientRect();
+  const w = Math.max(280, rect.width);
+  const h = 160;
+  c.width = w * dpr;
+  c.height = h * dpr;
+  c.style.height = h + "px";
+  const ctx = c.getContext("2d");
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0,0,w,h);
+
+  const days = 30;
+  const data = [];
+  let cur = todayStr();
+  for (let i = days-1; i >= 0; i--) {
+    const d = dateAddDays(cur, -i);
+    if (d === state.today.date) data.push({ date: d, val: state.today.points });
+    else data.push({ date: d, val: state.history[d]?.total || 0 });
+  }
+  const max = Math.max(state.profile.dailyGoal, ...data.map(x => x.val), 10);
+  const min = Math.min(0, ...data.map(x => x.val));
+  const range = max - min;
+
+  // axes
+  const padL = 24, padR = 8, padT = 8, padB = 22;
+  const cw = w - padL - padR;
+  const ch = h - padT - padB;
+  const barW = cw / days;
+
+  // goal line
+  const goalY = padT + ch * (1 - (state.profile.dailyGoal - min) / range);
+  ctx.strokeStyle = "rgba(212,175,55,0.5)";
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();
+  ctx.moveTo(padL, goalY); ctx.lineTo(padL + cw, goalY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "rgba(212,175,55,0.6)";
+  ctx.font = "10px Inter";
+  ctx.fillText(state.profile.dailyGoal, 2, goalY + 3);
+
+  // zero line if min < 0
+  if (min < 0) {
+    const zeroY = padT + ch * (1 - (0 - min) / range);
+    ctx.strokeStyle = "rgba(155,141,181,0.3)";
+    ctx.beginPath();
+    ctx.moveTo(padL, zeroY); ctx.lineTo(padL + cw, zeroY); ctx.stroke();
+  }
+
+  // bars
+  for (let i = 0; i < days; i++) {
+    const v = data[i].val;
+    const isToday = i === days - 1;
+    const x = padL + i * barW + 1;
+    const y0 = padT + ch * (1 - (Math.max(0, v) - min) / range);
+    const yz = padT + ch * (1 - (0 - min) / range);
+    const top = Math.min(y0, yz);
+    const height = Math.abs(y0 - yz);
+    const bw = Math.max(2, barW - 2);
+    let grad;
+    if (v < 0) {
+      grad = ctx.createLinearGradient(0, padT, 0, padT + ch);
+      grad.addColorStop(0, "#ef4444");
+      grad.addColorStop(1, "#7f1d1d");
+    } else if (v >= state.profile.dailyGoal) {
+      grad = ctx.createLinearGradient(0, padT, 0, padT + ch);
+      grad.addColorStop(0, "#86efac");
+      grad.addColorStop(1, "#16a34a");
+    } else {
+      grad = ctx.createLinearGradient(0, padT, 0, padT + ch);
+      grad.addColorStop(0, "#f4d03f");
+      grad.addColorStop(1, "#b8941f");
+    }
+    ctx.fillStyle = grad;
+    if (v < 0) {
+      const negTop = yz;
+      const negH = (padT + ch * (1 - (v - min)/range)) - yz;
+      ctx.fillRect(x, negTop, bw, negH);
+    } else if (v > 0) {
+      ctx.fillRect(x, top, bw, height);
+    }
+    if (isToday) {
+      ctx.strokeStyle = "#f4d03f";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x - 0.5, padT, bw + 1, ch);
+    }
+  }
+
+  // labels (every 5 days)
+  ctx.fillStyle = "#9b8db5";
+  ctx.font = "9px Inter";
+  for (let i = 0; i < days; i += 5) {
+    const lbl = data[i].date.slice(5).replace("-","/");
+    ctx.fillText(lbl, padL + i * barW, h - 6);
+  }
+  ctx.fillText("Now", padL + (days-1) * barW - 2, h - 6);
+}
+
+// ============ MODALS ============
+let pendingNumberAction = null;
+function openNumberModal(taskId, kind) {
+  const t = (kind === "inc" ? INCREMENTING : NEGATIVES).find(x => x.id === taskId);
+  if (!t) return;
+  pendingNumberAction = { taskId, kind };
+  $("#numberTitle").textContent = `${t.icon} ${t.name}`;
+  $("#numberText").textContent = `Enter number of ${t.unit}s`;
+  $("#numberInput").value = "";
+  $("#numberInput").step = t.step || 1;
+  $("#numberModal").classList.add("show");
+  setTimeout(() => $("#numberInput").focus(), 100);
+}
+function closeNumberModal() {
+  $("#numberModal").classList.remove("show");
+  pendingNumberAction = null;
+}
+
+function openSleepModal() {
+  $("#sleepInput").value = state.today.surveys.sleep != null ? state.today.surveys.sleep : "";
+  $("#sleepModal").classList.add("show");
+  setTimeout(() => $("#sleepInput").focus(), 100);
+}
+function closeSleepModal() {
+  $("#sleepModal").classList.remove("show");
+}
+
+function openProfileModal() {
+  $("#nameInput").value = state.profile.name;
+  const grid = $("#avatarGrid");
+  grid.innerHTML = "";
+  for (const av of AVATARS) {
+    const o = el("div", "avatar-option" + (av === state.profile.avatar ? " selected" : ""));
+    o.textContent = av;
+    o.dataset.av = av;
+    o.addEventListener("click", () => {
+      $$(".avatar-option", grid).forEach(x => x.classList.remove("selected"));
+      o.classList.add("selected");
+    });
+    grid.appendChild(o);
+  }
+  $("#profileModal").classList.add("show");
+}
+function closeProfileModal() { $("#profileModal").classList.remove("show"); }
+
+function openConfirm(title, text, onOK) {
+  $("#confirmTitle").textContent = title;
+  $("#confirmText").textContent = text;
+  $("#confirmModal").classList.add("show");
+  $("#confirmOK").onclick = () => {
+    $("#confirmModal").classList.remove("show");
+    onOK();
+  };
+  $("#confirmCancel").onclick = () => $("#confirmModal").classList.remove("show");
+}
+
+// ============ EVENT WIRING ============
+function wire() {
+  // Tabs
+  $$(".tab").forEach(t => t.addEventListener("click", () => {
+    $$(".tab").forEach(x => x.classList.remove("active"));
+    $$(".tab-panel").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    $("#panel-" + t.dataset.tab).classList.add("active");
+    if (t.dataset.tab === "stats") drawHistoryChart();
+    haptic(10);
+  }));
+
+  // Sleep modal
+  $("#sleepSubmit").addEventListener("click", () => {
+    const v = parseFloat($("#sleepInput").value);
+    if (!isNaN(v) && v >= 0 && v <= 24) {
+      submitSleep(v);
+      closeSleepModal();
+    }
+  });
+  $("#sleepSkip").addEventListener("click", () => {
+    state.today.sleepAsked = true;
+    save();
+    closeSleepModal();
+  });
+  $("#sleepInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") $("#sleepSubmit").click();
+  });
+
+  // Number modal
+  $("#numberSubmit").addEventListener("click", () => {
+    const v = parseFloat($("#numberInput").value);
+    if (!pendingNumberAction || isNaN(v) || v <= 0) { closeNumberModal(); return; }
+    if (pendingNumberAction.kind === "inc") addIncrement(pendingNumberAction.taskId, v);
+    else addNegative(pendingNumberAction.taskId, v);
+    closeNumberModal();
+  });
+  $("#numberCancel").addEventListener("click", closeNumberModal);
+  $("#numberClose").addEventListener("click", closeNumberModal);
+  $("#numberInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") $("#numberSubmit").click();
+  });
+
+  // Profile
+  $("#avatarBtn").addEventListener("click", openProfileModal);
+  $("#heroName").addEventListener("click", openProfileModal);
+  $("#profileClose").addEventListener("click", closeProfileModal);
+  $("#profileSave").addEventListener("click", () => {
+    const n = $("#nameInput").value.trim();
+    if (n) state.profile.name = n;
+    const av = $$(".avatar-option.selected")[0];
+    if (av) state.profile.avatar = av.dataset.av;
+    save(); render();
+    closeProfileModal();
+  });
+
+  // Side quest creation
+  $("#newPoints").addEventListener("input", e => {
+    $("#pointsDisplay").textContent = e.target.value;
+  });
+  $("#createQuestBtn").addEventListener("click", () => {
+    const title = $("#newTitle").value.trim();
+    const desc = $("#newDesc").value.trim();
+    const pts = parseInt($("#newPoints").value) || 5;
+    if (!title) { toast("Quest needs a title", "bad"); return; }
+    addCustom(title, desc, pts);
+    $("#newTitle").value = "";
+    $("#newDesc").value = "";
+    $("#newPoints").value = 5;
+    $("#pointsDisplay").textContent = "5";
+  });
+
+  // Goal settings
+  $("#dailyGoalInput").addEventListener("change", e => {
+    const v = parseInt(e.target.value);
+    if (v > 0) { state.profile.dailyGoal = v; save(); render(); }
+  });
+  $("#weeklyGoalInput").addEventListener("change", e => {
+    const v = parseInt(e.target.value);
+    if (v > 0) { state.profile.weeklyGoal = v; save(); render(); }
+  });
+
+  // Reset
+  $("#resetBtn").addEventListener("click", () => {
+    openConfirm("Reset All Data?", "This wipes ALL XP, history, and quests. Cannot be undone.", () => {
+      state = defaultState();
+      save(); render();
+      toast("Data reset");
+    });
+  });
+
+  // Click outside modal to close (except sleep which is forced)
+  $$(".modal-bg").forEach(bg => {
+    bg.addEventListener("click", e => {
+      if (e.target === bg && bg.id !== "sleepModal" && bg.id !== "confirmModal") {
+        bg.classList.remove("show");
+      }
+    });
+  });
+
+  // Resize redraw
+  window.addEventListener("resize", () => {
+    if ($("#panel-stats").classList.contains("active")) drawHistoryChart();
+  });
+}
+
+// ============ MORNING SLEEP PROMPT ============
+function maybePromptSleep() {
+  const now = new Date();
+  // only prompt if not asked today AND it's morning-ish (4am - 2pm) so it doesn't bug at night
+  if (!state.today.sleepAsked && now.getHours() >= 4 && now.getHours() < 14) {
+    setTimeout(() => openSleepModal(), 500);
+  }
+}
+
+// ============ INIT ============
+function init() {
+  rollover();
+  wire();
+  render();
+  checkAchievements();
+  save();
+  maybePromptSleep();
+}
+
+init();
+</script>
+</body>
+</html>
