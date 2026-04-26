@@ -933,6 +933,8 @@ const INCREMENTING = [
   { id: "newPeople", icon: "🤝", name: "New People Met",         points: 8, unit: "person",  lifetime: "newPeople" },
   { id: "podcast",   icon: "🎧", name: "Philosophy Episodes",    points: 3, unit: "episode", lifetime: "podcasts" },
   { id: "pages",     icon: "📖", name: "Pages Read",              points: 1, unit: "page",    lifetime: "pagesRead" },
+  { id: "tennis",    icon: "🎾", name: "Hours of Tennis",         points: 10, unit: "hour",   lifetime: "tennisHours", step: 0.5 },
+  { id: "pagesWrit", icon: "✍️", name: "Pages Written",           points: 5, unit: "page",    lifetime: "pagesWritten" },
 ];
 
 const NEGATIVES = [
@@ -1056,6 +1058,7 @@ function defaultState() {
     achievements: {},     // achId -> { date }
     lifetime: {
       pushups: 0, studyHours: 0, phoneFreeHours: 0, newPeople: 0, podcasts: 0, pagesRead: 0,
+      tennisHours: 0, pagesWritten: 0,
       salads: 0, stretches: 0, customsCompleted: 0, daysGoalHit: 0, weeksGoalHit: 0,
     },
   };
