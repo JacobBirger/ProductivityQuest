@@ -947,8 +947,10 @@ const NEGATIVES = [
 ];
 
 const YESNO = [
-  { id: "salad",   icon: "🥗", name: "Ate a Salad",      points: 5, lifetime: "salads" },
-  { id: "stretch", icon: "🧘", name: "Morning Stretch",  points: 2, lifetime: "stretches" },
+  { id: "salad",    icon: "🥗", name: "Ate a Salad",            points: 5, lifetime: "salads" },
+  { id: "stretch",  icon: "🧘", name: "Morning Stretch",        points: 2, lifetime: "stretches" },
+  { id: "meditate", icon: "🧠", name: "Meditate for 10 Minutes", points: 5, lifetime: "meditations" },
+  { id: "journal",  icon: "📔", name: "Journal",                 points: 2, lifetime: "journalDays" },
 ];
 
 function sleepPoints(h) {
@@ -1062,7 +1064,8 @@ function defaultState() {
     lifetime: {
       pushups: 0, studyHours: 0, phoneFreeHours: 0, newPeople: 0, podcasts: 0, pagesRead: 0,
       tennisHours: 0, pagesWritten: 0,
-      salads: 0, stretches: 0, customsCompleted: 0, daysGoalHit: 0, weeksGoalHit: 0,
+      salads: 0, stretches: 0, meditations: 0, journalDays: 0,
+      customsCompleted: 0, daysGoalHit: 0, weeksGoalHit: 0,
     },
   };
 }
