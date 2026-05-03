@@ -211,7 +211,7 @@
   /* === TABS === */
   .tabs {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 4px;
     margin-top: 16px;
     background: #150a2a;
@@ -224,11 +224,11 @@
     border: none;
     color: #9b8db5;
     font-family: 'Cinzel', serif;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
-    padding: 10px 4px;
+    padding: 10px 2px;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
@@ -711,6 +711,27 @@
     letter-spacing: 0.2em;
   }
 
+  /* === LONG TERM QUESTS === */
+  .lt-archived {
+    border-color: #2a3a5e;
+    opacity: 0.7;
+  }
+  .lt-archive-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .lt-archive-toggle {
+    font-size: 11px;
+    color: #9b8db5;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
   /* === DELETE BTN === */
   .delete-btn {
     background: transparent;
@@ -773,6 +794,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="quests">Quests</button>
     <button class="tab" data-tab="side">Side</button>
+    <button class="tab" data-tab="long">Long</button>
     <button class="tab" data-tab="stats">Stats</button>
     <button class="tab" data-tab="ach">Awards</button>
   </div>
@@ -813,6 +835,35 @@
       </div>
       <div class="section-title">Active Side Quests</div>
       <div id="customsList"></div>
+    </div>
+
+    <!-- Long Term Quests -->
+    <div class="tab-panel" id="panel-long">
+      <div class="create-quest">
+        <div class="section-title" style="margin-top:0">Create Long-Term Quest</div>
+        <div class="form-row">
+          <label class="form-label">Title</label>
+          <input class="field" id="ltTitle" maxlength="60" placeholder="Learn a new skill...">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Description</label>
+          <textarea class="field" id="ltDesc" maxlength="200" placeholder="What does completing this mean to you?"></textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Reward (pts)</label>
+          <input class="field" type="number" id="ltPoints" min="1" max="9999" placeholder="e.g. 100" inputmode="numeric">
+        </div>
+        <button class="btn btn-primary" id="ltCreateBtn">+ Forge Quest</button>
+      </div>
+      <div class="section-title">Active Quests</div>
+      <div id="ltActiveList"></div>
+      <div id="ltArchiveSection" style="display:none">
+        <div class="section-title lt-archive-header" id="ltArchiveToggle">
+          <span>Archive</span>
+          <button class="lt-archive-toggle" id="ltArchiveBtn">▼ Show</button>
+        </div>
+        <div id="ltArchiveList" style="display:none"></div>
+      </div>
     </div>
 
     <!-- Stats -->
@@ -1061,6 +1112,7 @@ function defaultState() {
     history: {},          // dateStr -> { total, breakdown: {...} }
     streaks: {},          // taskId -> { count, lastDate }
     customs: [],          // [{ id, title, desc, points, status, created, completedDate }]
+    longTermQuests: [],   // [{ id, title, desc, points, status, created, completedDate }]
     achievements: {},     // achId -> { date }
     lifetime: {
       pushups: 0, studyHours: 0, phoneFreeHours: 0, newPeople: 0, podcasts: 0, pagesRead: 0,
@@ -1088,6 +1140,7 @@ function loadState() {
       streaks: s.streaks || {},
       achievements: s.achievements || {},
       customs: s.customs || [],
+      longTermQuests: s.longTermQuests || [],
       history: s.history || {},
     };
   } catch(e) {
@@ -1305,6 +1358,113 @@ function deleteCustom(id) {
   save(); render();
 }
 
+// ============ LONG TERM QUESTS ============
+function addLongTermQuest(title, desc, points) {
+  state.longTermQuests.push({
+    id: "lt_" + Date.now() + "_" + Math.floor(Math.random()*999),
+    title, desc, points,
+    status: "active",
+    created: todayStr(),
+  });
+  save(); renderLongTermQuests();
+  toast(`Quest forged: ${title}`);
+}
+
+function completeLongTermQuest(id) {
+  const q = state.longTermQuests.find(x => x.id === id);
+  if (!q || q.status !== "active") return;
+  q.status = "completed";
+  q.completedDate = todayStr();
+  awardPoints(q.points);
+  state.lifetime.customsCompleted = (state.lifetime.customsCompleted || 0) + 1;
+  toast(`+${q.points} XP · ${q.title}`);
+  haptic(20);
+  save(); render();
+}
+
+function abandonLongTermQuest(id) {
+  const q = state.longTermQuests.find(x => x.id === id);
+  if (!q || q.status !== "active") return;
+  q.status = "abandoned";
+  q.completedDate = todayStr();
+  toast(`${q.title} abandoned`, "bad");
+  haptic(40);
+  save(); renderLongTermQuests();
+}
+
+function deleteLongTermQuest(id) {
+  state.longTermQuests = state.longTermQuests.filter(x => x.id !== id);
+  save(); renderLongTermQuests();
+}
+
+let ltArchiveVisible = false;
+
+function renderLongTermQuests() {
+  const active = state.longTermQuests.filter(q => q.status === "active");
+  const archived = state.longTermQuests.filter(q => q.status !== "active");
+
+  const activeList = $("#ltActiveList");
+  activeList.innerHTML = "";
+  if (active.length === 0) {
+    activeList.appendChild(el("div", "empty-state", "No long-term quests. Forge one above!"));
+  } else {
+    for (const q of active) {
+      const card = el("div", "quest");
+      card.innerHTML = `
+        <div class="quest-icon">⚔️</div>
+        <div class="quest-info">
+          <div class="quest-name">${escapeHTML(q.title)}</div>
+          <div class="quest-meta"><span class="pts">+${q.points} pts</span>${q.desc ? ' · ' + escapeHTML(q.desc) : ''}</div>
+        </div>
+        <div class="quest-actions yesno-actions">
+          <button class="btn btn-icon btn-check" data-ltact="complete" data-id="${q.id}" title="Complete">✓</button>
+          <button class="btn btn-icon btn-x" data-ltact="abandon" data-id="${q.id}" title="Abandon">✕</button>
+        </div>`;
+      activeList.appendChild(card);
+    }
+  }
+
+  const archSection = $("#ltArchiveSection");
+  const archList = $("#ltArchiveList");
+  if (archived.length === 0) {
+    archSection.style.display = "none";
+    return;
+  }
+  archSection.style.display = "block";
+  $("#ltArchiveBtn").textContent = ltArchiveVisible ? "▲ Hide" : "▼ Show (" + archived.length + ")";
+  archList.style.display = ltArchiveVisible ? "block" : "none";
+
+  if (ltArchiveVisible) {
+    archList.innerHTML = "";
+    for (const q of [...archived].reverse()) {
+      const icon = q.status === "completed" ? "🏆" : "💀";
+      const card = el("div", "quest lt-archived " + (q.status === "completed" ? "done" : "failed"));
+      card.innerHTML = `
+        <div class="quest-icon">${icon}</div>
+        <div class="quest-info">
+          <div class="quest-name">${escapeHTML(q.title)}</div>
+          <div class="quest-meta">${q.status === "completed" ? `+${q.points} XP earned` : "Abandoned"} · ${q.completedDate || ""}</div>
+        </div>
+        <button class="delete-btn" data-ltact="delete" data-id="${q.id}">🗑</button>`;
+      archList.appendChild(card);
+    }
+  }
+
+  activeList.onclick = archList.onclick = (e) => {
+    const b = e.target.closest("button[data-ltact]");
+    if (!b) return;
+    const id = b.dataset.id;
+    const act = b.dataset.ltact;
+    if (act === "complete") {
+      openConfirm("Complete Quest?", `Mark "${state.longTermQuests.find(x=>x.id===id)?.title}" as complete and claim ${state.longTermQuests.find(x=>x.id===id)?.points} XP?`, () => completeLongTermQuest(id));
+    } else if (act === "abandon") {
+      openConfirm("Abandon Quest?", "This quest will be moved to the archive.", () => abandonLongTermQuest(id));
+    } else if (act === "delete") {
+      deleteLongTermQuest(id);
+    }
+  };
+}
+
 // ============ UI HELPERS ============
 const $ = (s, p=document) => p.querySelector(s);
 const $$ = (s, p=document) => Array.from(p.querySelectorAll(s));
@@ -1344,6 +1504,7 @@ function render() {
   renderStats();
   renderQuests();
   renderCustoms();
+  renderLongTermQuests();
   renderStatsTab();
   renderAchievements();
 }
@@ -1570,6 +1731,12 @@ function renderStatsTab() {
   for (const q of state.customs) {
     if (q.status === "done" && q.completedDate === state.today.date) {
       rows.push([`📜 ${q.title}`, `+${q.points}`]);
+    }
+  }
+  // long-term quests completed today
+  for (const q of state.longTermQuests) {
+    if (q.status === "completed" && q.completedDate === state.today.date) {
+      rows.push([`⚔️ ${q.title}`, `+${q.points}`]);
     }
   }
   if (rows.length === 0) bl.appendChild(el("div", "empty-state", "Nothing logged today yet."));
@@ -1844,6 +2011,25 @@ function wire() {
     $("#newDesc").value = "";
     $("#newPoints").value = 5;
     $("#pointsDisplay").textContent = "5";
+  });
+
+  // Long-term quest creation
+  $("#ltCreateBtn").addEventListener("click", () => {
+    const title = $("#ltTitle").value.trim();
+    const desc = $("#ltDesc").value.trim();
+    const pts = parseInt($("#ltPoints").value);
+    if (!title) { toast("Quest needs a title", "bad"); return; }
+    if (!pts || pts < 1) { toast("Enter a point reward", "bad"); return; }
+    addLongTermQuest(title, desc, pts);
+    $("#ltTitle").value = "";
+    $("#ltDesc").value = "";
+    $("#ltPoints").value = "";
+  });
+
+  // Archive toggle
+  $("#ltArchiveToggle").addEventListener("click", () => {
+    ltArchiveVisible = !ltArchiveVisible;
+    renderLongTermQuests();
   });
 
   // Goal settings
