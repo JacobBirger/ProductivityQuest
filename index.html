@@ -982,7 +982,9 @@
 // ============ DEFINITIONS ============
 const INCREMENTING = [
   { id: "pushups",   icon: "💪", name: "Pushups",                points: 1, unit: "rep",     lifetime: "pushups" },
-  { id: "study",     icon: "📚", name: "Hours Studying/Working", points: 2, unit: "hour",    lifetime: "studyHours", step: 0.5 },
+  { id: "situps",    icon: "🏋️", name: "Situps",                 points: 1, unit: "rep",     lifetime: "situps" },
+  { id: "squats",    icon: "🦵", name: "Squats",                  points: 1, unit: "rep",     lifetime: "squats" },
+  { id: "study",     icon: "📚", name: "Hours Studying/Working", points: 5, unit: "hour",    lifetime: "studyHours", step: 0.5 },
   { id: "phoneFree", icon: "🔇", name: "Hours Without Phone",    points: 5, unit: "hour",    lifetime: "phoneFreeHours", step: 0.5 },
   { id: "newPeople", icon: "🤝", name: "New People Met",         points: 8, unit: "person",  lifetime: "newPeople" },
   { id: "podcast",   icon: "🎧", name: "Philosophy Episodes",    points: 3, unit: "episode", lifetime: "podcasts" },
@@ -1115,7 +1117,7 @@ function defaultState() {
     longTermQuests: [],   // [{ id, title, desc, points, status, created, completedDate }]
     achievements: {},     // achId -> { date }
     lifetime: {
-      pushups: 0, studyHours: 0, phoneFreeHours: 0, newPeople: 0, podcasts: 0, pagesRead: 0,
+      pushups: 0, situps: 0, squats: 0, studyHours: 0, phoneFreeHours: 0, newPeople: 0, podcasts: 0, pagesRead: 0,
       tennisHours: 0, pagesWritten: 0,
       salads: 0, stretches: 0, meditations: 0, journalDays: 0, controlDays: 0,
       customsCompleted: 0, daysGoalHit: 0, weeksGoalHit: 0,
