@@ -711,6 +711,32 @@
     letter-spacing: 0.2em;
   }
 
+  /* === COLLAPSIBLE GROUP === */
+  .group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    margin: 18px 0 10px;
+    gap: 8px;
+  }
+  .group-header .section-title {
+    margin: 0;
+    flex: 1;
+  }
+  .group-toggle {
+    font-size: 11px;
+    color: #9b8db5;
+    background: rgba(58,42,94,0.5);
+    border: 1px solid #3a2a5e;
+    border-radius: 6px;
+    padding: 3px 8px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   /* === LONG TERM QUESTS === */
   .lt-archived {
     border-color: #2a3a5e;
@@ -802,6 +828,11 @@
   <div class="tab-content">
     <!-- Quests Tab -->
     <div class="tab-panel active" id="panel-quests">
+      <div class="group-header" id="physicalHeader">
+        <div class="section-title">Physical Health</div>
+        <button class="group-toggle" id="physicalToggle">▼ Show</button>
+      </div>
+      <div id="physicalList" style="display:none"></div>
       <div class="section-title">Daily Quests</div>
       <div id="incrementingList"></div>
       <div class="section-title">Daily Trials</div>
@@ -980,10 +1011,15 @@
 "use strict";
 
 // ============ DEFINITIONS ============
+const PHYSICAL = [
+  { id: "pushups",  icon: "💪", name: "Pushups",  points: 1,  unit: "rep",    lifetime: "pushups" },
+  { id: "situps",   icon: "🏋️", name: "Situps",   points: 1,  unit: "rep",    lifetime: "situps" },
+  { id: "squats",   icon: "🦵", name: "Squats",   points: 1,  unit: "rep",    lifetime: "squats" },
+  { id: "pullups",  icon: "🔝", name: "Pullups",  points: 3,  unit: "rep",    lifetime: "pullups" },
+  { id: "planks",   icon: "🧱", name: "Planks",   points: 5,  unit: "second", lifetime: "plankSeconds", pointsEvery: 30 },
+];
+
 const INCREMENTING = [
-  { id: "pushups",   icon: "💪", name: "Pushups",                points: 1, unit: "rep",     lifetime: "pushups" },
-  { id: "situps",    icon: "🏋️", name: "Situps",                 points: 1, unit: "rep",     lifetime: "situps" },
-  { id: "squats",    icon: "🦵", name: "Squats",                  points: 1, unit: "rep",     lifetime: "squats" },
   { id: "study",     icon: "📚", name: "Hours Studying/Working", points: 5, unit: "hour",    lifetime: "studyHours", step: 0.5 },
   { id: "phoneFree", icon: "🔇", name: "Hours Without Phone",    points: 5, unit: "hour",    lifetime: "phoneFreeHours", step: 0.5 },
   { id: "newPeople", icon: "🤝", name: "New People Met",         points: 8, unit: "person",  lifetime: "newPeople" },
@@ -1117,7 +1153,7 @@ function defaultState() {
     longTermQuests: [],   // [{ id, title, desc, points, status, created, completedDate }]
     achievements: {},     // achId -> { date }
     lifetime: {
-      pushups: 0, situps: 0, squats: 0, studyHours: 0, phoneFreeHours: 0, newPeople: 0, podcasts: 0, pagesRead: 0,
+      pushups: 0, situps: 0, squats: 0, pullups: 0, plankSeconds: 0, studyHours: 0, phoneFreeHours: 0, newPeople: 0, podcasts: 0, pagesRead: 0,
       tennisHours: 0, pagesWritten: 0,
       salads: 0, stretches: 0, meditations: 0, journalDays: 0, controlDays: 0,
       customsCompleted: 0, daysGoalHit: 0, weeksGoalHit: 0,
@@ -1270,13 +1306,24 @@ function checkAchievements() {
 
 // ============ INCREMENT/DECREMENT ACTIONS ============
 function addIncrement(taskId, amount) {
-  const t = INCREMENTING.find(x => x.id === taskId);
+  const t = INCREMENTING.find(x => x.id === taskId) || PHYSICAL.find(x => x.id === taskId);
   if (!t || amount <= 0) return;
-  state.today.increments[taskId] = (state.today.increments[taskId] || 0) + amount;
+  const prevCount = state.today.increments[taskId] || 0;
+  const newCount = prevCount + amount;
+  state.today.increments[taskId] = newCount;
   if (t.lifetime) state.lifetime[t.lifetime] = (state.lifetime[t.lifetime] || 0) + amount;
-  const pts = amount * t.points;
-  awardPoints(pts);
-  toast(`+${pts} XP · ${t.name}`);
+  let pts;
+  if (t.pointsEvery) {
+    // award points for each complete interval crossed
+    const prevIntervals = Math.floor(prevCount / t.pointsEvery);
+    const newIntervals = Math.floor(newCount / t.pointsEvery);
+    pts = (newIntervals - prevIntervals) * t.points;
+  } else {
+    pts = amount * t.points;
+  }
+  if (pts > 0) awardPoints(pts);
+  const label = t.pointsEvery ? `${newCount} sec (${Math.floor(newCount/t.pointsEvery)}×${t.points}pts)` : `+${pts} XP`;
+  toast(pts > 0 ? `+${pts} XP · ${t.name}` : `${t.name}: ${newCount} sec`);
   haptic(20);
   save(); render();
 }
@@ -1541,6 +1588,36 @@ function renderStats() {
 }
 
 function renderQuests() {
+  // Physical Health (collapsible)
+  const pl = $("#physicalList");
+  if (pl) {
+    pl.innerHTML = "";
+    for (const t of PHYSICAL) {
+      const count = state.today.increments[t.id] || 0;
+      let metaText;
+      if (t.pointsEvery) {
+        const intervals = Math.floor(count / t.pointsEvery);
+        const earned = intervals * t.points;
+        metaText = `<span class="pts">+${t.points} pts</span> per ${t.pointsEvery} ${t.unit}s · today: ${count}s (${earned} XP)`;
+      } else {
+        const earned = count * t.points;
+        metaText = `<span class="pts">+${t.points} pts</span> per ${t.unit} · today: ${count} (${earned} XP)`;
+      }
+      const card = el("div", "quest");
+      card.innerHTML = `
+        <div class="quest-icon">${t.icon}</div>
+        <div class="quest-info">
+          <div class="quest-name">${t.name}</div>
+          <div class="quest-meta">${metaText}</div>
+        </div>
+        <div class="quest-actions">
+          <button class="btn btn-icon btn-input" data-act="num" data-id="${t.id}" data-step="${t.step||1}">#</button>
+          <button class="btn btn-icon btn-plus" data-act="inc" data-id="${t.id}" data-step="${t.step||1}">+</button>
+        </div>`;
+      pl.appendChild(card);
+    }
+  }
+
   // Incrementing
   const il = $("#incrementingList");
   il.innerHTML = "";
@@ -1712,6 +1789,17 @@ function renderStatsTab() {
   const bl = $("#breakdownList");
   bl.innerHTML = "";
   const rows = [];
+  for (const t of PHYSICAL) {
+    const c = state.today.increments[t.id] || 0;
+    if (c > 0) {
+      if (t.pointsEvery) {
+        const earned = Math.floor(c / t.pointsEvery) * t.points;
+        rows.push([`${t.icon} ${t.name}`, `${c} sec = +${earned}`]);
+      } else {
+        rows.push([`${t.icon} ${t.name}`, `${c} × ${t.points} = +${c*t.points}`]);
+      }
+    }
+  }
   for (const t of INCREMENTING) {
     const c = state.today.increments[t.id] || 0;
     if (c > 0) rows.push([`${t.icon} ${t.name}`, `${c} × ${t.points} = +${c*t.points}`]);
@@ -1890,7 +1978,7 @@ function drawHistoryChart() {
 // ============ MODALS ============
 let pendingNumberAction = null;
 function openNumberModal(taskId, kind) {
-  const t = (kind === "inc" ? INCREMENTING : NEGATIVES).find(x => x.id === taskId);
+  const t = (kind === "inc" ? [...INCREMENTING, ...PHYSICAL] : NEGATIVES).find(x => x.id === taskId);
   if (!t) return;
   pendingNumberAction = { taskId, kind };
   $("#numberTitle").textContent = `${t.icon} ${t.name}`;
@@ -1954,6 +2042,14 @@ function wire() {
     if (t.dataset.tab === "stats") drawHistoryChart();
     haptic(10);
   }));
+
+  // Physical health toggle
+  let physicalVisible = false;
+  $("#physicalHeader").addEventListener("click", () => {
+    physicalVisible = !physicalVisible;
+    $("#physicalList").style.display = physicalVisible ? "block" : "none";
+    $("#physicalToggle").textContent = physicalVisible ? "▲ Hide" : "▼ Show";
+  });
 
   // Sleep modal
   $("#sleepSubmit").addEventListener("click", () => {
